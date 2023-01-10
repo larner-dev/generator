@@ -1,12 +1,15 @@
 {
-  "name": "perk",
+  "name": "{{name}}",
   "description": "A larner.dev project",
   "version": "1.0.0",
   "author": "Aaron Larner",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.ts src/plopfile.ts --outdir=build --bundle --platform=node --target=node16  --packages=external --format=esm",
-    "dev": "npm run build -- --watch",
+    "build": "npm run build-cjs && npm run build-esm && npm run build-types",
+    "build-cjs": "esbuild src/index.ts --bundle --platform=node --target=node14 --outdir=build/cjs  --packages=external --format=cjs",
+    "build-esm": "esbuild src/index.ts --bundle --platform=node --target=node14 --outdir=build/esm  --packages=external --format=esm",
+    "build-types": "tsc src/*.ts --declaration --emitDeclarationOnly --outfile build/types.d.ts",
+    "dev": "npm run build-esm -- --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     "postversion": "git push && git push --tags",
@@ -24,7 +27,6 @@
   "types": "./build/types.d.ts",
   "main": "./build/esm/index.js",
   "devDependencies": {
-    "@types/change-case": "2.3.1",
     "@types/jest": "29.2.5",
     "@types/node": "18.11.18",
     "@typescript-eslint/eslint-plugin": "5.48.1",
@@ -36,16 +38,5 @@
     "jest": "29.3.1",
     "typescript": "4.9.4"
   },
-  "dependencies": {
-    "@caporal/core": "2.0.2",
-    "@types/fs-extra": "11.0.0",
-    "chalk": "5.2.0",
-    "change-case": "4.1.2",
-    "fs-extra": "11.1.0",
-    "plop": "3.1.1"
-  },
-  "license": "UNLICENSED",
-  "bin": {
-    "gen": "./bin/index.js"
-  }
+  "license": "UNLICENSED"
 }

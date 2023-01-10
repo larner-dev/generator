@@ -1,11 +1,11 @@
 import { buildActions } from "../lib/buildActions";
 import { ExtendedPlopGeneratorConfig } from "../lib/types";
 
-const generatorName = "typescript-nodejs";
+const generatorName = "typescript-react";
 
-export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
+export const typescriptReact: ExtendedPlopGeneratorConfig = {
   generatorName,
-  description: "Nodejs, ESM, TypeScript, Jest",
+  description: "React, ESM, TypeScript, Jest",
   prompts: [
     {
       type: "input",
