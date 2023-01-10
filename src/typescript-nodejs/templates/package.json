@@ -1,5 +1,5 @@
 {
-  "name": "{{ dashCase name}}",
+  "name": "{{name}}",
   "description": "A larner.dev project",
   "version": "1.0.0",
   "author": "Aaron Larner",
@@ -9,7 +9,7 @@
     "build-cjs": "esbuild src/index.ts --bundle --platform=node --target=node14 --outdir=build/cjs  --packages=external --format=cjs",
     "build-esm": "esbuild src/index.ts --bundle --platform=node --target=node14 --outdir=build/esm  --packages=external --format=esm",
     "build-types": "tsc src/*.ts --declaration --emitDeclarationOnly --outfile build/types.d.ts",
-    "dev": "nodemon -x \"tsc --build tsconfig.json\" -w src -e ts,js,json",
+    "dev": "npm run build-esm -- --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     "postversion": "git push && git push --tags",

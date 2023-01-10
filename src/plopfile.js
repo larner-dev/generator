@@ -81,7 +81,8 @@ var typescriptNodejs = {
       type: "addMany",
       destination: data.destination,
       templateFiles: "**/*",
-      base: "typescript-nodejs/templates"
+      base: "typescript-nodejs/templates",
+      globOptions: { dot: true }
     }
   ])
   //   actions: buildActions(generatorName, (data: GeneratorData) => {

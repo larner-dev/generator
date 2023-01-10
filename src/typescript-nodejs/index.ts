@@ -24,6 +24,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       destination: data.destination,
       templateFiles: "**/*",
       base: "typescript-nodejs/templates",
+      globOptions: { dot: true },
     },
   ]),
   //   actions: buildActions(generatorName, (data: GeneratorData) => {
