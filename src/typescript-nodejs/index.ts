@@ -1,13 +1,10 @@
-import { resolve } from "path";
-import { cwd } from "process";
 import { buildActions } from "../lib/buildActions";
+import { ExtendedPlopGeneratorConfig } from "../lib/types";
 
-interface GeneratorData {
-  name: string;
-  destination: string;
-}
+const generatorName = "typescript-nodejs";
 
-export const typescriptNodejs = {
+export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
+  generatorName,
   description: "Nodejs, ESM, TypeScript, Jest",
   prompts: [
     {
@@ -21,14 +18,15 @@ export const typescriptNodejs = {
       message: `Package Destination (default: packages/package-name)`,
     },
   ],
-  actions: buildActions((data: GeneratorData) => {
-    return [
-      {
-        type: "addMany",
-        destination: data.destination,
-        templateFiles: "**/*",
-        base: "typescript-nodejs/templates",
-      },
-    ];
-  }),
+  actions: buildActions(generatorName, (data) => [
+    {
+      type: "addMany",
+      destination: data.destination,
+      templateFiles: "**/*",
+      base: "typescript-nodejs/templates",
+    },
+  ]),
+  //   actions: buildActions(generatorName, (data: GeneratorData) => {
+  //     return ;
+  //   }),
 };

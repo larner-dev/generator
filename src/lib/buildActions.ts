@@ -4,11 +4,13 @@ import { paramCase } from "change-case";
 import { createHash } from "crypto";
 import { readdir, readFile, writeFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
+import { DynamicActionsFunction } from "node-plop";
+import { ActionConfig, ActionType, CustomActionFunction } from "plop";
 
-interface GeneratorData {
-  name?: string;
-  destination?: string;
-  originalDestination?: string;
+export interface GeneratorData {
+  name: string;
+  destination: string;
+  originalDestination: string;
 }
 
 const getFiles = async (dir: string): Promise<string[]> => {
@@ -22,44 +24,59 @@ const getFiles = async (dir: string): Promise<string[]> => {
   return Array.prototype.concat(...files);
 };
 
+const generateHashes: CustomActionFunction = async (answers) => {
+  const hashDir = resolve(answers.destination, ".generator", "hash");
+  const files = await getFiles(answers.destination);
+  await ensureDir(hashDir);
+  await Promise.all(
+    files.map(async (f) => {
+      const hash = createHash("md5")
+        .update(await readFile(f))
+        .digest("hex");
+      const relativePath = relative(answers.destination, f);
+      const outPath = resolve(hashDir, relativePath);
+      await ensureDir(dirname(outPath));
+      await writeFile(outPath, hash);
+    })
+  );
+  return "File hashes created";
+};
+
+const generateConfigJson =
+  (generatorName: string, originalDestination: string): CustomActionFunction =>
+  async (answers) => {
+    const generatorDir = resolve(answers.destination, ".generator");
+    await writeFile(
+      resolve(generatorDir, "config.json"),
+      JSON.stringify(
+        {
+          generatorName,
+          answers: { ...answers, destination: originalDestination },
+        },
+        null,
+        2
+      )
+    );
+    return "Config json created";
+  };
+
 export const buildActions =
-  (cb: (data: GeneratorData) => []) => (data: GeneratorData) => {
-    if (!data.name) {
+  (
+    generatorName: string,
+    buildCustomActions: (arg0: Record<string, any>) => ActionType[]
+  ): DynamicActionsFunction =>
+  (data?: Record<string, any>): ActionType[] => {
+    if (!data?.name) {
       throw new Error("A name is required");
     }
     const originalDestination = data.destination;
     data.destination = data.destination
       ? resolve(cwd(), data.destination)
       : resolve(cwd(), "packages", paramCase(data.name));
-    const actions = cb(data);
-    const generatorDir = resolve(data.destination, ".generator", "hash");
+    const actions = buildCustomActions(data);
     return [
       ...actions,
-      async (data: Required<GeneratorData>) => {
-        const files = await getFiles(data.destination);
-        await ensureDir(generatorDir);
-        await Promise.all([
-          Promise.all(
-            files.map(async (f) => {
-              const hash = createHash("md5")
-                .update(await readFile(f))
-                .digest("hex");
-              const relativePath = relative(data.destination, f);
-              const outPath = resolve(generatorDir, "hash", relativePath);
-              await ensureDir(dirname(outPath));
-              await writeFile(outPath, hash);
-            })
-          ),
-          writeFile(
-            resolve(generatorDir, "data.json"),
-            JSON.stringify(
-              { ...data, destination: originalDestination },
-              null,
-              2
-            )
-          ),
-        ]);
-        return "File hashes created";
-      },
+      generateHashes,
+      generateConfigJson(generatorName, originalDestination),
     ];
   };

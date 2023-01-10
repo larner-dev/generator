@@ -15,45 +15,54 @@ var getFiles = async (dir) => {
   );
   return Array.prototype.concat(...files);
 };
-var buildActions = (cb) => (data) => {
-  if (!data.name) {
+var generateHashes = async (answers) => {
+  const hashDir = resolve(answers.destination, ".generator", "hash");
+  const files = await getFiles(answers.destination);
+  await ensureDir(hashDir);
+  await Promise.all(
+    files.map(async (f) => {
+      const hash = createHash("md5").update(await readFile(f)).digest("hex");
+      const relativePath = relative(answers.destination, f);
+      const outPath = resolve(hashDir, relativePath);
+      await ensureDir(dirname(outPath));
+      await writeFile(outPath, hash);
+    })
+  );
+  return "File hashes created";
+};
+var generateConfigJson = (generatorName2, originalDestination) => async (answers) => {
+  const generatorDir = resolve(answers.destination, ".generator");
+  await writeFile(
+    resolve(generatorDir, "config.json"),
+    JSON.stringify(
+      {
+        generatorName: generatorName2,
+        answers: { ...answers, destination: originalDestination }
+      },
+      null,
+      2
+    )
+  );
+  return "Config json created";
+};
+var buildActions = (generatorName2, buildCustomActions) => (data) => {
+  if (!(data == null ? void 0 : data.name)) {
     throw new Error("A name is required");
   }
   const originalDestination = data.destination;
   data.destination = data.destination ? resolve(cwd(), data.destination) : resolve(cwd(), "packages", paramCase(data.name));
-  const actions = cb(data);
-  const generatorDir = resolve(data.destination, ".generator", "hash");
+  const actions = buildCustomActions(data);
   return [
     ...actions,
-    async (data2) => {
-      const files = await getFiles(data2.destination);
-      await ensureDir(generatorDir);
-      await Promise.all([
-        Promise.all(
-          files.map(async (f) => {
-            const hash = createHash("md5").update(await readFile(f)).digest("hex");
-            const relativePath = relative(data2.destination, f);
-            const outPath = resolve(generatorDir, "hash", relativePath);
-            await ensureDir(dirname(outPath));
-            await writeFile(outPath, hash);
-          })
-        ),
-        writeFile(
-          resolve(generatorDir, "data.json"),
-          JSON.stringify(
-            { ...data2, destination: originalDestination },
-            null,
-            2
-          )
-        )
-      ]);
-      return "File hashes created";
-    }
+    generateHashes,
+    generateConfigJson(generatorName2, originalDestination)
   ];
 };
 
 // src/typescript-nodejs/index.ts
+var generatorName = "typescript-nodejs";
 var typescriptNodejs = {
+  generatorName,
   description: "Nodejs, ESM, TypeScript, Jest",
   prompts: [
     {
@@ -67,21 +76,22 @@ var typescriptNodejs = {
       message: `Package Destination (default: packages/package-name)`
     }
   ],
-  actions: buildActions((data) => {
-    return [
-      {
-        type: "addMany",
-        destination: data.destination,
-        templateFiles: "**/*",
-        base: "typescript-nodejs/templates"
-      }
-    ];
-  })
+  actions: buildActions(generatorName, (data) => [
+    {
+      type: "addMany",
+      destination: data.destination,
+      templateFiles: "**/*",
+      base: "typescript-nodejs/templates"
+    }
+  ])
+  //   actions: buildActions(generatorName, (data: GeneratorData) => {
+  //     return ;
+  //   }),
 };
 
 // src/plopfile.ts
 function plopfile_default(plop) {
-  plop.setGenerator("typescript-nodejs", typescriptNodejs);
+  plop.setGenerator(typescriptNodejs.generatorName, typescriptNodejs);
 }
 export {
   plopfile_default as default
