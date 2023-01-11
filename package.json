@@ -38,5 +38,8 @@
   "license": "MIT",
   "bin": {
     "gen": "./build/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
