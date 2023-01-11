@@ -169,6 +169,16 @@ export const upgradeCommand = async (
     console.log("");
   }
 
+  if (
+    !added.length &&
+    !removed.length &&
+    !updated.length &&
+    !conflicted.length
+  ) {
+    console.log(chalk.green("You are already up to date!"));
+    return;
+  }
+
   const result = await inquirer.prompt([
     {
       type: "confirm",
