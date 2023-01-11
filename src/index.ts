@@ -1,12 +1,7 @@
+#!/usr/bin/env node
+
 import { program } from "commander";
-import chalk from "chalk";
-import nodePlop from "node-plop";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
 import pkg from "../package.json";
-import { paramCase } from "change-case";
-import { cwd } from "process";
-import { ensureDir } from "fs-extra";
 import { newCommand } from "./commands/new";
 import { upgradeCommand } from "./commands/upgrade";
 

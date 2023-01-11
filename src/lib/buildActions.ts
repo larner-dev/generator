@@ -1,11 +1,10 @@
 import { dirname, relative, resolve } from "path";
 import { cwd } from "process";
 import { paramCase } from "change-case";
-import { createHash } from "crypto";
-import { readdir, readFile, writeFile } from "fs/promises";
+import { writeFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import { DynamicActionsFunction } from "node-plop";
-import { ActionConfig, ActionType, CustomActionFunction } from "plop";
+import { ActionType, CustomActionFunction } from "plop";
 import { getFiles } from "./getFiles";
 import { getHash } from "./getHash";
 
