@@ -1,16 +1,20 @@
 # generator
 
-`npm i @larner.dev/generator`
-
 This is a tool for scaffolding / generating new projects and packages. It's different from other tools like yeoman because it makes upgrading existing projects easier when the base template changes.
 
 ## Usage
 
-After installing, run:
+### new
 
-`gen new typescript-nodejs`
+`npx @larner.dev/generator new typescript-nodejs`
 
 This will generate a new node project with typescript. Right now this is the only template that's supported, but more are in the works.
+
+This tool is build with monorepos in mind, so by default the project will be located at `packages/<package_name>`. To set the location manually use the `--path` option:
+
+`npx @larner.dev/generator new typescript-nodejs --path my-new-project`
+
+### upgrade
 
 Imagine a few weeks after you generated your typescript-nodejs project some of the dependencies changed (eg. there's a newer version of jest and you want to tweak the eslintrc). After updating the code in the template simply run:
 
