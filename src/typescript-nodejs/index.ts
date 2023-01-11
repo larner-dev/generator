@@ -41,23 +41,20 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       when: (res) => res.publishable,
     },
   ],
-  actions: buildActions(generatorName, (data) => {
-    console.log({ data });
-    return [
-      {
-        type: "addMany",
-        destination: data.destination,
-        templateFiles: "**/*",
-        base: "typescript-nodejs/templates",
-        globOptions: { dot: true },
-      },
-      // We can't just include the .gitignore file in the templates directory because when publishing
-      // to npm all .gitignore files are removed
-      {
-        type: "add",
-        path: join(data.destination, ".gitignore"),
-        templateFile: "typescript-nodejs/.gitignore.hbs",
-      },
-    ];
-  }),
+  actions: buildActions(generatorName, (data) => [
+    {
+      type: "addMany",
+      destination: data.destination,
+      templateFiles: "**/*",
+      base: "typescript-nodejs/templates",
+      globOptions: { dot: true },
+    },
+    // We can't just include the .gitignore file in the templates directory because when publishing
+    // to npm all .gitignore files are removed
+    {
+      type: "add",
+      path: join(data.destination, ".gitignore"),
+      templateFile: "typescript-nodejs/.gitignore.hbs",
+    },
+  ]),
 };
