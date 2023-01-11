@@ -6,6 +6,8 @@ import { readdir, readFile, writeFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import { DynamicActionsFunction } from "node-plop";
 import { ActionConfig, ActionType, CustomActionFunction } from "plop";
+import { getFiles } from "./getFiles";
+import { getHash } from "./getHash";
 
 export interface GeneratorData {
   name: string;
@@ -13,26 +15,13 @@ export interface GeneratorData {
   originalDestination: string;
 }
 
-const getFiles = async (dir: string): Promise<string[]> => {
-  const dirents = await readdir(dir, { withFileTypes: true });
-  const files: string[][] = await Promise.all(
-    dirents.map((dirent) => {
-      const res = resolve(dir, dirent.name);
-      return dirent.isDirectory() ? getFiles(res) : [res];
-    })
-  );
-  return Array.prototype.concat(...files);
-};
-
 const generateHashes: CustomActionFunction = async (answers) => {
   const hashDir = resolve(answers.destination, ".generator", "hash");
   const files = await getFiles(answers.destination);
   await ensureDir(hashDir);
   await Promise.all(
     files.map(async (f) => {
-      const hash = createHash("md5")
-        .update(await readFile(f))
-        .digest("hex");
+      const hash = await getHash(f);
       const relativePath = relative(answers.destination, f);
       const outPath = resolve(hashDir, relativePath);
       await ensureDir(dirname(outPath));
