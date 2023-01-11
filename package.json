@@ -40,9 +40,7 @@
     "inquirer": "9.1.4"
   },
   "license": "MIT",
-  "bin": {
-    "gen": "./build/index.js"
-  },
+  "bin": "./build/index.js",
   "publishConfig": {
     "access": "public"
   }
