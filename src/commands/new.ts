@@ -17,6 +17,13 @@ export const newCommand = async (
 ) => {
   const plop = await nodePlop(resolve(__dirname, "./plopfile.js"));
   plop.setPlopfilePath(resolve(__dirname, "..", "src"));
+  plop.setHelper("includes", function (array, value, options) {
+    // fallback...
+    array = array instanceof Array ? array : [array];
+    if (array.includes(value)) {
+      return options.fn(this);
+    }
+  });
   let generator = null;
   try {
     generator = plop.getGenerator(str);
