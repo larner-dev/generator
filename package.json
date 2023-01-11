@@ -1,6 +1,6 @@
 {
-  "name": "perk",
-  "description": "A larner.dev project",
+  "name": "@larner.dev/generator",
+  "description": "A project / package scaffolding tool",
   "version": "1.0.0",
   "author": "Aaron Larner",
   "type": "module",
@@ -14,15 +14,7 @@
     "prepublishOnly": "npm test",
     "test": "jest"
   },
-  "exports": {
-    ".": {
-      "import": "./build/esm/index.js",
-      "require": "./build/cjs/index.js",
-      "types": "./build/types.d.ts"
-    }
-  },
-  "types": "./build/types.d.ts",
-  "main": "./build/esm/index.js",
+  "main": "./build/index.js",
   "devDependencies": {
     "@types/change-case": "2.3.1",
     "@types/jest": "29.2.5",
@@ -43,8 +35,8 @@
     "fs-extra": "11.1.0",
     "plop": "3.1.1"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bin": {
-    "gen": "./bin/index.js"
+    "gen": "./build/index.js"
   }
 }
