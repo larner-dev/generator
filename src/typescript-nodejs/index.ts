@@ -60,11 +60,9 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     ];
     if (data.features.includes("publishable")) {
       actions.push({
-        type: "addMany",
-        destination: data.destination,
-        templateFiles: "**/*",
-        base: "typescript-nodejs/features/publishable",
-        globOptions: { dot: true },
+        type: "add",
+        path: join(data.destination, ".npmignore"),
+        templateFile: "typescript-nodejs/features/publishable/.npmignore.hbs",
       });
     }
     return actions;
