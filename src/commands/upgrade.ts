@@ -176,6 +176,7 @@ export const upgradeCommand = async (
     !conflicted.length
   ) {
     console.log(chalk.green("You are already up to date!"));
+    await remove(tmpDir);
     return;
   }
 
@@ -191,6 +192,7 @@ export const upgradeCommand = async (
 
   if (!result.confirm) {
     console.log(chalk.yellow("Upgrade aborted"));
+    await remove(tmpDir);
     return;
   }
 
