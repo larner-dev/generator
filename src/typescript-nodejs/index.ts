@@ -13,7 +13,7 @@ interface Dependency {
 
 const featureDependencies: Record<string, Dependency[]> = {
   default: [],
-  larner_dev_api: [{ name: "@larner.dev/api", version: "1.0.5" }],
+  larner_dev_api: [{ name: "@larner.dev/api", version: "1.0.6" }],
   publishable: [
     { name: "@types/jest", version: "29.2.5" },
     { name: "@types/node", version: "18.11.18" },
