@@ -18,9 +18,16 @@ export const newCommand = async (
   const plop = await nodePlop(resolve(__dirname, "./plopfile.js"));
   plop.setPlopfilePath(resolve(__dirname, "..", "src"));
   plop.setHelper("includes", function (array, value, options) {
-    // fallback...
     array = array instanceof Array ? array : [array];
     if (array.includes(value)) {
+      // @ts-ignore
+      return options.fn(this);
+    }
+  });
+  plop.setHelper("excludes", function (array, value, options) {
+    array = array instanceof Array ? array : [array];
+    if (!array.includes(value)) {
+      // @ts-ignore
       return options.fn(this);
     }
   });
