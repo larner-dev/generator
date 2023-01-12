@@ -277,6 +277,7 @@ export const upgradeCommand = async (
     join(tmpDir, ".generator", "hash"),
     join(destination, ".generator", "hash")
   );
+  await remove(tmpDir);
 
   if (conflicted.length) {
     console.log(
