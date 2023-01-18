@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { Actions } from "node-plop";
 import { join } from "path";
 import { buildActions } from "../lib/buildActions";
 import { ExtendedPlopGeneratorConfig } from "../lib/types";
@@ -19,6 +20,10 @@ const featureDependencies: Record<string, Dependency[]> = {
     { name: "@types/node", version: "18.11.18" },
     { name: "@typescript-eslint/eslint-plugin", version: "5.48.1" },
     { name: "@typescript-eslint/parser", version: "5.48.1" },
+  ],
+  command_line_tool: [
+    { name: "chalk", version: "5.2.0" },
+    { name: "commander", version: "9.5.0" },
   ],
 };
 const featureDevDependencies: Record<string, Dependency[]> = {
@@ -70,6 +75,10 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         {
           name: "API with @larner.dev/api",
           value: "larner_dev_api",
+        },
+        {
+          name: "Command Line Tool",
+          value: "command_line_tool",
         },
       ],
     },
@@ -156,7 +165,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     data.devDependencies.sort((a: Dependency, b: Dependency) =>
       a.name > b.name ? 1 : a.name < b.name ? -1 : 0
     );
-    const actions = [
+    const actions: Actions = [
       {
         type: "addMany",
         destination: data.destination,
@@ -164,29 +173,15 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         base: "typescript-nodejs/templates",
         globOptions: { dot: true },
       },
-      // We can't just include the .gitignore file in the templates directory because when publishing
-      // to npm all .gitignore files are removed
-      {
-        type: "add",
-        path: join(data.destination, ".gitignore"),
-        templateFile: "typescript-nodejs/.gitignore.hbs",
-      },
     ];
-    if (data.features.includes("publishable")) {
-      actions.push({
-        type: "add",
-        path: join(data.destination, ".npmignore"),
-        templateFile: "typescript-nodejs/features/publishable/.npmignore.hbs",
-      });
-    }
-    if (data.features.includes("larner_dev_api")) {
+    for (const feature of data.features) {
       actions.push({
         type: "addMany",
         destination: data.destination,
         templateFiles: "**/*",
-        base: "typescript-nodejs/features/larner_dev_api",
+        base: `typescript-nodejs/features/${feature}`,
         globOptions: { dot: true },
-        // @ts-ignore
+        stripExtensions: ["hbs"],
         force: true,
       });
     }
