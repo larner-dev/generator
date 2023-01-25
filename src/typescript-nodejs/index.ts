@@ -16,7 +16,6 @@ const featureDependencies: Record<string, Dependency[]> = {
   default: [],
   larner_dev_api: [{ name: "@larner.dev/api", version: "1.0.6" }],
   publishable: [
-    { name: "@types/jest", version: "29.2.5" },
     { name: "@types/node", version: "18.11.18" },
     { name: "@typescript-eslint/eslint-plugin", version: "5.48.1" },
     { name: "@typescript-eslint/parser", version: "5.48.1" },
@@ -28,16 +27,15 @@ const featureDependencies: Record<string, Dependency[]> = {
 };
 const featureDevDependencies: Record<string, Dependency[]> = {
   default: [
-    { name: "@types/jest", version: "29.2.5" },
     { name: "@types/node", version: "18.11.18" },
     { name: "@typescript-eslint/eslint-plugin", version: "5.48.1" },
     { name: "@typescript-eslint/parser", version: "5.48.1" },
+    { name: "concurrently", version: "7.6.0" },
     { name: "esbuild", version: "0.16.16" },
-    { name: "esbuild-jest", version: "0.5.0" },
     { name: "eslint", version: "8.31.0" },
     { name: "eslint-config-prettier", version: "8.6.0" },
-    { name: "jest", version: "29.3.1" },
     { name: "typescript", version: "4.9.4" },
+    { name: "vitest", version: "0.28.1" },
   ],
   larner_dev_api: [
     { name: "concurrently", version: "7.6.0" },
@@ -47,7 +45,7 @@ const featureDevDependencies: Record<string, Dependency[]> = {
 
 export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
   generatorName,
-  description: "Nodejs, ESM, TypeScript, Jest",
+  description: "Nodejs, ESM, TypeScript, Vitest",
   prompts: [
     {
       type: "input",

@@ -5,27 +5,28 @@
   "author": "Aaron Larner",
   "type": "module",
   "scripts": {
-    "build": "npm run build-cjs && npm run build-esm && npm run build-types",
+    "build": "yarn build-cjs && yarn build-esm && yarn build-types",
     {{#includes features "larner_dev_api"}}
     "build-cjs": "esbuild `find ./src -name '*.ts'` --platform=node --target=node16 --outdir=build/cjs --format=cjs",
     "build-esm": "esbuild `find ./src -name '*.ts'` --platform=node --target=node16 --outdir=build/esm --format=esm",
     "build-types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
-    "dev": "concurrently 'npm run build-esm -- --watch' 'nodemon build/esm/index.js -w ./build/esm -w node_modules'",
+    "dev": "concurrently 'yarn build-esm --watch' 'nodemon build/esm/index.js -w ./build/esm -w node_modules'",
     {{/includes}}
     {{#excludes features "larner_dev_api"}}
-    "build-cjs": "esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=build/cjs  --packages=external --format=cjs",
-    "build-esm": "esbuild src/index.ts --bundle --platform=node --target=node16 --outdir=build/esm  --packages=external --format=esm",
+    "build-cjs": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/cjs  --packages=external --format=cjs",
+    "build-esm": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/esm  --packages=external --format=esm",
     "build-types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
-    "dev": "npm run build-esm -- --watch",
+    "dev": "concurrently 'yarn build-esm --watch' 'yarn build-types --watch'",
     {{/excludes}}
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     {{#includes features "publishable"}}
     "postversion": "git push && git push --tags",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test",
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn test",
     {{/includes}}
-    "test": "jest"
+    "test": "vitest --run --dir ./src",
+    "test-watch": "vitest --dir ./src"
   },
   "exports": {
     ".": {
@@ -48,6 +49,11 @@
   {{#includes features "public"}}
   "publishConfig": {
     "access": "public"
+  },
+  {{/includes}}
+  {{#includes features "command_line_tool"}}
+  "bin": {
+    "{{dashCase name}}": "./build/esm/cli.js"
   },
   {{/includes}}
   "license": "UNLICENSED"

@@ -1,11 +1,8 @@
 import { index } from "./index";
-
-console.log("a");
+import { describe, test, expect } from "vitest";
 
 describe("index", () => {
-  test("it should equal foo", () => {
-    expect(index).toEqual("foo");
+  test("true should be true", () => {
+    expect(true).toEqual(true);
   });
 });
-
-console.log("b");

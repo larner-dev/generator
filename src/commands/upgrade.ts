@@ -1,15 +1,22 @@
-import { join } from "path";
+import { extname, join } from "path";
 import { Command } from "commander";
 import chalk from "chalk";
 import { cwd } from "process";
 import { copy, pathExists, remove } from "fs-extra";
 import { readFile, writeFile } from "fs/promises";
+import * as diff from "diff";
 import { newCommand } from "./new";
 import { getFiles } from "../lib/getFiles";
 import inquirer from "inquirer";
-import { getHash } from "../lib/getHash";
-import * as diff from "diff";
+import { getCurrentValueOrHash } from "../lib/getCurrentValueOrHash";
 import { getLineBreakSequence } from "../lib/getLineBreakSequence";
+import {
+  applyChanges,
+  configDiff,
+  isConfigFile,
+  parseConfig,
+  stringifyConfig,
+} from "../lib/configFileHelpers";
 
 export const upgradeCommand = async (
   str: string,
@@ -73,19 +80,23 @@ export const upgradeCommand = async (
   const conflicted = [];
   const warnings = [];
 
+  const configEdits: { [key: string]: { current: string; after: string } } = {};
+
   for (const [key, val] of oldHashes) {
     if (!newHashes.has(key)) {
-      const currentHash = await getHash(join(destination, key));
+      const currentHash = await getCurrentValueOrHash(join(destination, key));
       if (currentHash === val) {
+        // The file was removed, but has not been modified since it was originally created
         removed.push(key);
       } else if (currentHash !== "") {
+        // The file was removed and was modified since it was originally created
         conflicted.push({
           action: "remove",
           path: key,
         });
       }
     } else if (val !== newHashes.get(key)) {
-      const currentHash = await getHash(join(destination, key));
+      const currentHash = await getCurrentValueOrHash(join(destination, key));
       // File is unchanged since the package was generated / last updated
       if (currentHash === val) {
         updated.push(key);
@@ -100,19 +111,79 @@ export const upgradeCommand = async (
       // File was changed since the package was generated / last updated and it doesn't match the
       // new upgraded value so we have a conflict.
       else {
-        conflicted.push({
-          action: "update",
-          path: key,
-          current: currentHash,
-          new: val,
-        });
+        const configType = isConfigFile(key);
+        // First try to do some special handling for certain file types
+        let beforeParsed;
+        let afterParsed;
+        let currentParsed;
+        if (configType) {
+          try {
+            beforeParsed = parseConfig(
+              await getCurrentValueOrHash(join(oldHashDir, key)),
+              configType
+            );
+          } catch (error) {
+            console.log(
+              chalk.yellow(
+                `Unable to parse config (before) ${key}: ${
+                  (error as Record<string, unknown>).message
+                }`
+              )
+            );
+          }
+          try {
+            afterParsed = parseConfig(newHashes.get(key)!, configType);
+          } catch (error) {
+            console.log(
+              chalk.yellow(
+                `Unable to parse config (after) ${key}: ${
+                  (error as Record<string, unknown>).message
+                }`
+              )
+            );
+          }
+          try {
+            currentParsed = parseConfig(currentHash, configType);
+          } catch (error) {
+            console.log(
+              chalk.yellow(
+                `Unable to parse config (current) ${key}: ${
+                  (error as Record<string, unknown>).message
+                }`
+              )
+            );
+          }
+        }
+        if (configType && beforeParsed && afterParsed && currentParsed) {
+          const changes = configDiff(beforeParsed, currentParsed, afterParsed);
+          const { current, after } = applyChanges(currentParsed, changes);
+          configEdits[key] = {
+            current: stringifyConfig(current, configType),
+            after: stringifyConfig(after, configType),
+          };
+          if (changes.some((c) => c.isConflict)) {
+            conflicted.push({
+              action: "update",
+              path: key,
+              current,
+              new: val,
+            });
+          }
+        } else {
+          conflicted.push({
+            action: "update",
+            path: key,
+            current: currentHash,
+            new: val,
+          });
+        }
       }
     }
   }
 
   for (const [key, val] of newHashes) {
     if (!oldHashes.has(key)) {
-      const currentHash = await getHash(join(destination, key));
+      const currentHash = await getCurrentValueOrHash(join(destination, key));
       if (!currentHash) {
         added.push(key);
       } else if (currentHash !== "") {
@@ -199,12 +270,26 @@ export const upgradeCommand = async (
   const promises = [
     ...added.map((a) => copy(join(tmpDir, a), join(destination, a))),
     ...updated.map(async (a) => copy(join(tmpDir, a), join(destination, a))),
-    ...removed.map((a) => remove(join(destination, a))),
+    ...removed.map((a) =>
+      remove(join(destination, a)).catch((error) =>
+        console.log(`Skipping ${a} because it was already removed`)
+      )
+    ),
     ...conflicted.map(async ({ path }) => {
       const pathToCurrent = join(destination, path);
       const pathToNew = join(tmpDir, path);
-      const currentString = (await readFile(pathToCurrent)).toString();
-      const newString = (await readFile(pathToNew)).toString();
+      const currentString =
+        path in configEdits
+          ? configEdits[path].current
+          : (
+              await readFile(pathToCurrent).catch(() => Promise.resolve(""))
+            ).toString();
+      const newString =
+        path in configEdits
+          ? configEdits[path].after
+          : (
+              await readFile(pathToNew).catch(() => Promise.resolve(""))
+            ).toString();
       const currentLines = currentString
         .split(/\r?\n/)
         .map((line, index) => ({ line, index }));

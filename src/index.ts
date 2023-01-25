@@ -6,7 +6,7 @@ import { newCommand } from "./commands/new";
 import { upgradeCommand } from "./commands/upgrade";
 
 program
-  .name("gen")
+  .name("generator")
   .description("CLI to generate monorepo package from predefined templates")
   .version(pkg.version);
 

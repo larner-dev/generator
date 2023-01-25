@@ -6,7 +6,8 @@ import { ensureDir } from "fs-extra";
 import { DynamicActionsFunction } from "node-plop";
 import { ActionType, CustomActionFunction } from "plop";
 import { getFiles } from "./getFiles";
-import { getHash } from "./getHash";
+import { getCurrentValueOrHash } from "./getCurrentValueOrHash";
+import packageJson from "../../package.json";
 
 export interface GeneratorData {
   name: string;
@@ -20,7 +21,7 @@ const generateHashes: CustomActionFunction = async (answers) => {
   await ensureDir(hashDir);
   await Promise.all(
     files.map(async (f) => {
-      const hash = await getHash(f);
+      const hash = await getCurrentValueOrHash(f);
       const relativePath = relative(answers.destination, f);
       const outPath = resolve(hashDir, relativePath);
       await ensureDir(dirname(outPath));
@@ -38,6 +39,7 @@ const generateConfigJson =
       resolve(generatorDir, "config.json"),
       JSON.stringify(
         {
+          version: packageJson.version,
           generatorName,
           answers: { ...answers, destination: originalDestination },
         },

@@ -15,6 +15,4 @@ program
     initCommand(str, options, program);
   });
 
-program.showHelpAfterError();
-
-await program.parseAsync();
+program.parse();
