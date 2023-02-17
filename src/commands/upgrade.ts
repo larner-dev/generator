@@ -23,6 +23,7 @@ export const upgradeCommand = async (
   options: Record<string, unknown>,
   program: Command
 ) => {
+  console.log("upgrade command");
   const destination = join(cwd(), str);
   const genDir = join(destination, ".generator");
   if (!(await pathExists(destination))) {
@@ -40,7 +41,7 @@ export const upgradeCommand = async (
   const config = JSON.parse(file.toString());
   const tmpDir = join(genDir, "tmp");
   await remove(tmpDir);
-  await newCommand(config.generatorName, { silent: true }, program, {
+  await newCommand(config.generatorName, tmpDir, { silent: true }, program, {
     ...config.answers,
     destination: tmpDir,
   });

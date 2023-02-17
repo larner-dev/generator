@@ -14,7 +14,12 @@ interface Dependency {
 
 const featureDependencies: Record<string, Dependency[]> = {
   default: [],
-  larner_dev_api: [{ name: "@larner.dev/api", version: "1.0.6" }],
+  koa_api: [
+    { name: "koa", version: "2.14.1" },
+    { name: "koa-object-router", version: "1.0.3" },
+  ],
+  koa_api_json_bodyparser: [{ name: "koa-bodyparser", version: "4.3.0" }],
+  koa_api_cors: [{ name: "@koa/cors", version: "4.0.0" }],
   publishable: [
     { name: "@types/node", version: "18.11.18" },
     { name: "@typescript-eslint/eslint-plugin", version: "5.48.1" },
@@ -37,10 +42,17 @@ const featureDevDependencies: Record<string, Dependency[]> = {
     { name: "typescript", version: "4.9.4" },
     { name: "vitest", version: "0.28.1" },
   ],
-  larner_dev_api: [
-    { name: "concurrently", version: "7.6.0" },
+  koa_api: [
     { name: "nodemon", version: "2.0.20" },
+    { name: "@swc/cli", version: "0.1.62" },
+    { name: "@swc/core", version: "1.3.35" },
+    { name: "chokidar", version: "3.5.3" },
+    { name: "@types/koa", version: "2.13.5" },
   ],
+  koa_api_json_bodyparser: [
+    { name: "@types/koa-bodyparser", version: "4.3.10" },
+  ],
+  koa_api_cors: [{ name: "@types/koa__cors", version: "3.3.0" }],
 };
 
 export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
@@ -72,13 +84,29 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         },
         {
           name: "API with @larner.dev/api",
-          value: "larner_dev_api",
+          value: "koa_api",
         },
         {
           name: "Command Line Tool",
           value: "command_line_tool",
         },
       ],
+    },
+    {
+      type: "checkbox",
+      name: "api_middleware",
+      message: "Which middleware will be used in your API?",
+      choices: [
+        {
+          name: "JSON Body Parser",
+          value: "json_bodyparser",
+        },
+        {
+          name: "CORS",
+          value: "cors",
+        },
+      ],
+      when: (answers) => answers.features.includes("koa_api"),
     },
     {
       type: "confirm",
@@ -89,6 +117,13 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     },
   ],
   actions: buildActions(generatorName, (data) => {
+    console.log({ data });
+    if ("api_middleware" in data) {
+      for (const middleware of data.api_middleware) {
+        data.features.push(`koa_api_${middleware}`);
+      }
+    }
+    console.log(data.features);
     const dependencies = new Map<string, Dependency>(
       featureDependencies.default.map((d) => [
         d.name,
@@ -155,6 +190,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         }
       }
     }
+
     data.dependencies = [...dependencies.values()];
     data.dependencies.sort((a: Dependency, b: Dependency) =>
       a.name > b.name ? 1 : a.name < b.name ? -1 : 0

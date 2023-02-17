@@ -1,0 +1,26 @@
+import Koa from "koa";
+import { router } from "koa-object-router";
+{{#includes api_middleware "cors"}}
+import cors from "@koa/cors";
+{{/includes}}
+{{#includes api_middleware "json_bodyparser"}}
+import bodyParser from "koa-bodyparser";
+{{/includes}}
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+
+const app = new Koa();
+{{#includes api_middleware "cors"}}
+app.use(cors());
+{{/includes}}
+{{#includes api_middleware "json_bodyparser"}}
+app.use(bodyParser({ enableTypes: ["json"] }));
+{{/includes}}
+app.use(
+  router({
+    routesDirectory: resolve(dirname(fileURLToPath(import.meta.url)), "routes"),
+    excludeRegexString: ".*\\.test\\.js",
+    errorHandler: console.error
+  })
+);
+app.listen(3000, () => console.log("Server running at http://localhost:3000"));

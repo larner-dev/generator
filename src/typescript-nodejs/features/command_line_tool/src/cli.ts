@@ -11,8 +11,6 @@ program
   .description("Initialize the thing")
   .argument("<name>", "Name of the thing")
   .option("-p, --path <name>", "Path where the thing should be created.")
-  .action((str, options) => {
-    initCommand(str, options, program);
-  });
+  .action(initCommand);
 
 program.parse();

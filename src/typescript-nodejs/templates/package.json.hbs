@@ -5,25 +5,22 @@
   "author": "Aaron Larner",
   "type": "module",
   "scripts": {
-    "build": "yarn build-cjs && yarn build-esm && yarn build-types",
-    {{#includes features "larner_dev_api"}}
-    "build-cjs": "esbuild `find ./src -name '*.ts'` --platform=node --target=node16 --outdir=build/cjs --format=cjs",
-    "build-esm": "esbuild `find ./src -name '*.ts'` --platform=node --target=node16 --outdir=build/esm --format=esm",
-    "build-types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
-    "dev": "concurrently 'yarn build-esm --watch' 'nodemon build/esm/index.js -w ./build/esm -w node_modules'",
+    "build": "yarn build:cjs && yarn build:esm && yarn build:types{{#includes features "koa_api"}} && yarn build:api{{/includes}}",
+    "build:cjs": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/cjs  --packages=external --format=cjs --out-extension:.js=.cjs",
+    "build:esm": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/esm  --packages=external --format=esm",
+    "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outfile build/types/index.d.ts",
+    {{#includes features "koa_api"}}
+    "build:api": "swc ./src -d build/api",
     {{/includes}}
-    {{#excludes features "larner_dev_api"}}
-    "build-cjs": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/cjs  --packages=external --format=cjs",
-    "build-esm": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/esm  --packages=external --format=esm",
-    "build-types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
-    "dev": "concurrently 'yarn build-esm --watch' 'yarn build-types --watch'",
-    {{/excludes}}
+    "dev": "yarn build && concurrently 'yarn build:types --watch' 'yarn build:cjs --watch' 'yarn build:esm --watch'{{#includes features "koa_api"}} 'yarn build:api --watch' 'nodemon build/api/api.js -w ./build/api'{{/includes}}",
+    {{#includes features "koa_api"}}
+    "dev:api": "concurrently 'yarn build:api --watch' 'nodemon build/api/api.js -w ./build/api'",
+    {{/includes}}
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     {{#includes features "publishable"}}
     "postversion": "git push && git push --tags",
-    "prepare": "yarn build",
-    "prepublishOnly": "yarn test",
+    "prepublishOnly": "yarn test && yarn build",
     {{/includes}}
     "test": "vitest --run --dir ./src",
     "test-watch": "vitest --dir ./src"
@@ -31,7 +28,7 @@
   "exports": {
     ".": {
       "import": "./build/esm/index.js",
-      "require": "./build/cjs/index.js"
+      "require": "./build/cjs/index.cjs"
     }
   },
   "types": "./build/types/index.d.ts",
@@ -56,5 +53,5 @@
     "{{dashCase name}}": "./build/esm/cli.js"
   },
   {{/includes}}
-  "license": "UNLICENSED"
+  "license": "{{#includes features "public"}}MIT{{/includes}}{{#excludes features "public"}}UNLICENSED{{/excludes}}"
 }

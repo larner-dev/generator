@@ -10,7 +10,8 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const newCommand = async (
-  str: string,
+  generatorName: string,
+  path: string,
   options: Record<string, unknown>,
   program: Command,
   answerOverride?: Record<string, unknown>
@@ -33,23 +34,20 @@ export const newCommand = async (
   });
   let generator = null;
   try {
-    generator = plop.getGenerator(str);
+    generator = plop.getGenerator(generatorName);
     plop.getGeneratorList();
   } catch (error) {
     program.error(
-      chalk.red(`Unknown generator ${chalk.white.bgRed.bold(str)}\n\n`) +
+      chalk.red(
+        `Unknown generator ${chalk.white.bgRed.bold(generatorName)}\n\n`
+      ) +
         `Your options are:\n\n${plop
           .getGeneratorList()
           .map((v) => `${v.name}: ${chalk.gray(v.description)}`)
           .join("\n")}`
     );
   }
-  if (options.path === "packages/<project_name>") {
-    options.path = "";
-  }
-  const answers =
-    answerOverride ||
-    (await generator.runPrompts(["_", options.path as string]));
+  const answers = answerOverride || (await generator.runPrompts(["_", path]));
   let { destination } = answers;
   if (!answerOverride) {
     if (!destination) {

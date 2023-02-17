@@ -14,14 +14,14 @@ program
   .command("new")
   .description("Generate a new package from a plop generator")
   .argument("<generator>", "Plop generator name")
-  .option(
-    "-p, --path <name>",
-    "Path where the package should be created. Defaults to packages/<package_name>.",
-    "packages/<project_name>"
+  .argument(
+    "[path]",
+    "Path where the package should be created. Defaults to current directory.",
+    "."
   )
   .option("-s, --silent", "Don't emit any output")
-  .action((str, options) => {
-    newCommand(str, options, program);
+  .action((generator, path, options) => {
+    newCommand(generator, path, options, program);
   });
 
 program

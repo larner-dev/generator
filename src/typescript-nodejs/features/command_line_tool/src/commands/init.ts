@@ -1,11 +1,6 @@
 import chalk from "chalk";
-import { Command } from "commander";
 import { log } from "../lib/log";
 
-export const initCommand = (
-  str: string,
-  options: Record<string, unknown>,
-  program: Command
-) => {
+export const initCommand = (str: string, options: Record<string, unknown>) => {
   log(chalk.green("Init complete"));
 };

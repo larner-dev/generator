@@ -2,7 +2,7 @@ interface Result {
   success: boolean;
 }
 
-export default {
+export const routes = {
   "GET /": async (): Promise<Result> => {
     return { success: true };
   },
