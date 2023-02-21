@@ -31,6 +31,9 @@ const featureDependencies: Record<string, Dependency[]> = {
   ],
   secrets_management: [{ name: "dotenv", version: "16.0.3" }],
   secrets_management_doppler: [{ name: "got", version: "12.5.3" }],
+  log_management: [{ name: "pino", version: "8.10.0" }],
+  log_management_logtail: [{ name: "@logtail/pino", version: "0.2.0" }],
+  log_management_syslog: [{ name: "pino-syslog", version: "3.0.0" }],
 };
 const featureDevDependencies: Record<string, Dependency[]> = {
   default: [
@@ -93,6 +96,10 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
           value: "command_line_tool",
         },
         {
+          name: "Log Management",
+          value: "log_management",
+        },
+        {
           name: "Secrets Management",
           value: "secrets_management",
         },
@@ -116,19 +123,37 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     },
     {
       type: "list",
+      name: "log_management_type",
+      message: "How would you like to manage logs?",
+      choices: [
+        {
+          name: "Logtail",
+          value: "logtail",
+        },
+        {
+          name: "Syslog",
+          value: "syslog",
+        },
+      ],
+      when: (answers) => answers.features.includes("log_management"),
+    },
+    {
+      type: "list",
       name: "secrets_management_type",
       message: "How would you like to manage secrets?",
       choices: [
         {
-          name: "Environment Variables",
-          value: "environment_variables",
-        },
-        {
           name: "Doppler",
           value: "doppler",
         },
+        {
+          name: "Environment Variables",
+          value: "environment_variables",
+        },
       ],
-      when: (answers) => answers.features.includes("secrets_management"),
+      when: (answers) =>
+        answers.features.includes("secrets_management") ||
+        answers.log_management_type !== "syslog",
     },
     {
       type: "confirm",
@@ -145,9 +170,17 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       }
     }
     if ("secrets_management_type" in data) {
-      data.features.push(`secrets_management_${data.secrets_management_type}`);
+      data.features.push(
+        "secrets_management",
+        `secrets_management_${data.secrets_management_type}`
+      );
     }
-    console.log(data.features);
+    if ("log_management_type" in data) {
+      data.features.push(
+        "log_management",
+        `log_management_${data.log_management_type}`
+      );
+    }
     const dependencies = new Map<string, Dependency>(
       featureDependencies.default.map((d) => [
         d.name,

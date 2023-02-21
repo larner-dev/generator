@@ -1,0 +1,24 @@
+import pino from "pino";
+{{#includes features "log_management_logtail"}}
+import { secrets } from "./secrets";
+
+const { LOGTAIL_TOKEN } = await secrets();
+
+const transport = pino.transport({
+  targets: [
+    {
+      target: "@logtail/pino",
+      level: process.env.LOG_LEVEL || "info",
+      options: { sourceToken: LOGTAIL_TOKEN },
+    },
+  ],
+});
+export const logger = pino(transport);
+{{/includes}}
+{{#includes features "log_management_syslog"}}
+const transport = pino.transport({
+  target: 'pino-syslog',
+  level: process.env.LOG_LEVEL,
+});
+export const logger = pino(transport);
+{{/includes}}

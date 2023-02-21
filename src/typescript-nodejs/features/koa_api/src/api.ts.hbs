@@ -1,8 +1,5 @@
 {{#includes features "secrets_management"}}
-import dotenv from "dotenv";
-dotenv.config();
-
-const { secrets } = await import("./lib/secrets");
+import 'dotenv/config';
 {{/includes}}
 import Koa from "koa";
 import { router } from "koa-object-router";
