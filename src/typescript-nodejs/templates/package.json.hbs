@@ -5,17 +5,11 @@
   "author": "Aaron Larner",
   "type": "module",
   "scripts": {
-    "build": "yarn build:cjs && yarn build:esm && yarn build:types{{#includes features "koa_api"}} && yarn build:api{{/includes}}",
-    "build:cjs": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/cjs  --packages=external --format=cjs --out-extension:.js=.cjs",
-    "build:esm": "esbuild src/index.ts{{#includes features "command_line_tool"}} src/cli.ts{{/includes}} --bundle --platform=node --target=node16 --outdir=build/esm  --packages=external --format=esm",
-    "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outfile build/types/index.d.ts",
-    {{#includes features "koa_api"}}
-    "build:api": "swc ./src -d build/api",
-    {{/includes}}
-    "dev": "yarn build && concurrently 'yarn build:types --watch' 'yarn build:cjs --watch' 'yarn build:esm --watch'{{#includes features "koa_api"}} 'yarn build:api --watch' 'nodemon build/api/api.js -w ./build/api'{{/includes}}",
-    {{#includes features "koa_api"}}
-    "dev:api": "concurrently 'yarn build:api --watch' 'nodemon build/api/api.js -w ./build/api'",
-    {{/includes}}
+    "build": "yarn build:cjs && yarn build:esm && yarn build:types",
+    "build:cjs": "./esbuild.js cjs",
+    "build:esm": "./esbuild.js esm",
+    "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
+    "dev": "yarn build && concurrently 'yarn build:types --watch' 'yarn build:esm --watch'{{#includes features "koa_api"}} 'nodemon build/esm/api.js -w ./build/esm'{{/includes}}",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     {{#includes features "publishable"}}

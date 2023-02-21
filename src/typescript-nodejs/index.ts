@@ -16,7 +16,7 @@ const featureDependencies: Record<string, Dependency[]> = {
   default: [],
   koa_api: [
     { name: "koa", version: "2.14.1" },
-    { name: "koa-object-router", version: "1.0.3" },
+    { name: "koa-object-router", version: "1.1.0" },
   ],
   koa_api_json_bodyparser: [{ name: "koa-bodyparser", version: "4.3.0" }],
   koa_api_cors: [{ name: "@koa/cors", version: "4.0.0" }],
@@ -29,6 +29,8 @@ const featureDependencies: Record<string, Dependency[]> = {
     { name: "chalk", version: "5.2.0" },
     { name: "commander", version: "9.5.0" },
   ],
+  secrets_management: [{ name: "dotenv", version: "16.0.3" }],
+  secrets_management_doppler: [{ name: "got", version: "12.5.3" }],
 };
 const featureDevDependencies: Record<string, Dependency[]> = {
   default: [
@@ -90,6 +92,10 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
           name: "Command Line Tool",
           value: "command_line_tool",
         },
+        {
+          name: "Secrets Management",
+          value: "secrets_management",
+        },
       ],
     },
     {
@@ -109,6 +115,22 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       when: (answers) => answers.features.includes("koa_api"),
     },
     {
+      type: "list",
+      name: "secrets_management_type",
+      message: "How would you like to manage secrets?",
+      choices: [
+        {
+          name: "Environment Variables",
+          value: "environment_variables",
+        },
+        {
+          name: "Doppler",
+          value: "doppler",
+        },
+      ],
+      when: (answers) => answers.features.includes("secrets_management"),
+    },
+    {
       type: "confirm",
       name: "public",
       message: "Will this package be public?",
@@ -117,11 +139,13 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     },
   ],
   actions: buildActions(generatorName, (data) => {
-    console.log({ data });
     if ("api_middleware" in data) {
       for (const middleware of data.api_middleware) {
         data.features.push(`koa_api_${middleware}`);
       }
+    }
+    if ("secrets_management_type" in data) {
+      data.features.push(`secrets_management_${data.secrets_management_type}`);
     }
     console.log(data.features);
     const dependencies = new Map<string, Dependency>(

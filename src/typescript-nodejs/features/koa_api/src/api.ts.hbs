@@ -1,3 +1,9 @@
+{{#includes features "secrets_management"}}
+import dotenv from "dotenv";
+dotenv.config();
+
+const { secrets } = await import("./lib/secrets");
+{{/includes}}
 import Koa from "koa";
 import { router } from "koa-object-router";
 {{#includes api_middleware "cors"}}
@@ -6,8 +12,7 @@ import cors from "@koa/cors";
 {{#includes api_middleware "json_bodyparser"}}
 import bodyParser from "koa-bodyparser";
 {{/includes}}
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import routers from './lib/routers';
 
 const app = new Koa();
 {{#includes api_middleware "cors"}}
@@ -18,7 +23,7 @@ app.use(bodyParser({ enableTypes: ["json"] }));
 {{/includes}}
 app.use(
   router({
-    routesDirectory: resolve(dirname(fileURLToPath(import.meta.url)), "routes"),
+    routers,
     excludeRegexString: ".*\\.test\\.js",
     errorHandler: console.error
   })

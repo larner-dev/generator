@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+/*
+ * THIS IS A GENERATED FILE
+ * IF YOU MAKE CHANGES TO THIS FILE YOU MAY RUN INTO CONFLICTS
+ * WHEN UPGRADING TO A NEWER VERSION OF THE GENERATED CODE.
+ */
+
+import * as esbuild from "esbuild";
+{{#includes features "koa_api"}}
+import { esbuildPluginMakeRouterObject } from "koa-object-router";
+{{/includes}}
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = resolve(dirname(fileURLToPath(import.meta.url)));
+
+const format = (process.argv[2] || "esm").toLowerCase();
+const watch = process.argv[3] === "--watch";
+
+const entryPoints = ["./src/index.ts"];
+{{#includes features "koa_api"}}
+if(format === "esm") {
+  entryPoints.push("./src/api.ts");
+  {{#includes features "command_line_tool"}}
+  entryPoints.push("./src/cli.ts");
+  {{/includes}}
+}
+{{/includes}}
+{{#excludes features "koa_api"}}
+{{#includes features "command_line_tool"}}
+if (format === "esm") {
+  entryPoints.push("./src/cli.ts");
+}
+{{/includes}}
+{{/excludes}}
+
+const options = {
+  entryPoints,
+  bundle: true,
+  outdir: `build/${format}`,
+  target: "node16",
+  format,
+  packages: "external",
+  watch,
+  {{#includes features "koa_api"}}
+  plugins: [
+    esbuildPluginMakeRouterObject({
+      outfile: resolve(__dirname, "src/lib/routers.ts"),
+      routesDirectory: resolve(__dirname, "src/routes"),
+    }),
+  ],
+  {{/includes}}
+};
+
+if (format === "cjs") {
+  options.outExtension = { ".js": ".cjs" };
+}
+
+await esbuild.build(options);
