@@ -150,22 +150,6 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     },
     {
       type: "list",
-      name: "log_management_type",
-      message: "How would you like to manage logs?",
-      choices: [
-        {
-          name: "Logtail",
-          value: "logtail",
-        },
-        {
-          name: "Syslog",
-          value: "syslog",
-        },
-      ],
-      when: (answers) => answers.features.includes("log_management"),
-    },
-    {
-      type: "list",
       name: "analytics_management_type",
       message: "How would you like to manage anlytics?",
       choices: [
@@ -192,7 +176,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       ],
       when: (answers) =>
         answers.features.includes("secrets_management") ||
-        answers.log_management_type !== "syslog" ||
+        answers.log_management_type === "logtail" ||
         answers.features.includes("analytics_management"),
     },
     {
@@ -227,7 +211,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         "log_management",
         `log_management_${data.log_management_type}`
       );
-      if (data.log_management_type !== "syslog") {
+      if (data.log_management_type === "logtail") {
         data.features.push("secrets_management");
       }
     }
