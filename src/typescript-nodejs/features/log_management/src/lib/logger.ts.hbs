@@ -1,4 +1,8 @@
 import pino from "pino";
+{{#includes features "koa_api"}}
+import koaLogger from "koa-pino-logger";
+{{/includes}}
+
 import { name } from "../../package.json";
 {{#includes features "log_management_logtail"}}
 import { secrets } from "./secrets";
@@ -7,18 +11,42 @@ const { LOGTAIL_TOKEN } = await secrets();
 
 const transport = pino.transport({
   targets: [
-    {
-      target: "@logtail/pino",
-      level: process.env.LOG_LEVEL || "info",
-      options: { sourceToken: LOGTAIL_TOKEN },
-    },
+    process.env.NODE_ENV === "production"
+      ? {
+          target: "@logtail/pino",
+          level: process.env.LOG_LEVEL || "info",
+          options: { sourceToken: LOGTAIL_TOKEN },
+        }
+      : {
+          target: "pino-pretty",
+          level: process.env.LOG_LEVEL || "info",
+          options: {},
+        },
   ],
 });
 {{/includes}}
 {{#includes features "log_management_syslog"}}
 const transport = pino.transport({
-  target: 'pino-syslog',
-  level: process.env.LOG_LEVEL,
+  targets: [
+    process.env.NODE_ENV === "production"
+      ? {
+          target: "pino-syslog",
+          level: process.env.LOG_LEVEL || "info",
+          options: {},
+        }
+      : {
+          target: "pino-pretty",
+          level: process.env.LOG_LEVEL || "info",
+          options: {},
+        },
+  ],
 });
 {{/includes}}
 export const logger = pino(transport).child({ source: name });
+{{#includes features "koa_api"}}
+export const loggerMiddleware = koaLogger({
+  // @ts-ignore pino and koa-pino-logger each use their own types, so  
+  // even though these types are compatible they cause a typescript error
+  logger,
+});
+{{/includes}}

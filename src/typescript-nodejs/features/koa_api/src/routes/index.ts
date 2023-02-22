@@ -1,9 +1,7 @@
-interface Result {
-  success: boolean;
-}
+import { APIRouter } from "../types/api";
 
-export const routes = {
-  "GET /": async (): Promise<Result> => {
-    return { success: true };
+export const routes: APIRouter["Index"] = {
+  "GET /": async (ctx) => {
+    return { success: true, query: ctx.querystring };
   },
 };

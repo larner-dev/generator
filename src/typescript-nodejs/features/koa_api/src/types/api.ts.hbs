@@ -1,0 +1,19 @@
+import { Context } from 'koa';
+import { RouteHandler } from 'koa-object-router';
+{{#includes features "log_management"}}
+import { Logger } from 'pino';
+
+export interface APIContext extends Context {
+    log: Logger;
+}
+{{/includes}}
+{{#excludes features "log_management"}}
+export type APIContext = Context;
+{{/excludes}}
+
+export interface APIRouter {
+  Index: {
+    "GET /": RouteHandler<APIContext, { success: boolean; query?: string }>;
+  };
+}
+

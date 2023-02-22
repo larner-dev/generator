@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import { Actions } from "node-plop";
-import { join } from "path";
 import { buildActions } from "../lib/buildActions";
 import { ExtendedPlopGeneratorConfig } from "../lib/types";
 
@@ -16,7 +15,8 @@ const packageDependencies: Record<string, Dependency[]> = {
   default: [],
   koa_api: [
     { name: "koa", version: "2.14.1" },
-    { name: "koa-object-router", version: "1.1.0" },
+    { name: "koa-object-router", version: "1.2.1" },
+    { name: "dotenv", version: "16.0.3" },
   ],
   koa_api_json_bodyparser: [{ name: "koa-bodyparser", version: "4.3.0" }],
   koa_api_cors: [{ name: "@koa/cors", version: "4.0.0" }],
@@ -31,7 +31,10 @@ const packageDependencies: Record<string, Dependency[]> = {
   ],
   secrets_management: [{ name: "dotenv", version: "16.0.3" }],
   secrets_management_doppler: [{ name: "got", version: "12.5.3" }],
-  log_management: [{ name: "pino", version: "8.10.0" }],
+  log_management: [
+    { name: "pino", version: "8.10.0" },
+    { name: "koa-pino-logger", version: "4.0.0" },
+  ],
   log_management_logtail: [{ name: "@logtail/pino", version: "0.2.0" }],
   log_management_syslog: [{ name: "pino-syslog", version: "3.0.0" }],
   analytics_management: [{ name: "type-fest", version: "3.5.7" }],
@@ -46,6 +49,7 @@ const packageDevDependencies: Record<string, Dependency[]> = {
     { name: "esbuild", version: "0.16.16" },
     { name: "eslint", version: "8.31.0" },
     { name: "eslint-config-prettier", version: "8.6.0" },
+    { name: "prettier", version: "2.8.4" },
     { name: "typescript", version: "4.9.4" },
     { name: "vitest", version: "0.28.1" },
   ],
@@ -60,6 +64,7 @@ const packageDevDependencies: Record<string, Dependency[]> = {
     { name: "@types/koa-bodyparser", version: "4.3.10" },
   ],
   koa_api_cors: [{ name: "@types/koa__cors", version: "3.3.0" }],
+  log_management: [{ name: "@types/koa-pino-logger", version: "3.0.1" }],
 };
 
 export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
@@ -213,6 +218,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     if ("analytics_management_type" in data) {
       data.features.push(
         "analytics_management",
+        "secrets_management",
         `analytics_management_${data.analytics_management_type}`
       );
     }
@@ -221,6 +227,9 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         "log_management",
         `log_management_${data.log_management_type}`
       );
+      if (data.log_management_type !== "syslog") {
+        data.features.push("secrets_management");
+      }
     }
     const dependencies = new Map<string, Dependency>(
       packageDependencies.default.map((d) => [

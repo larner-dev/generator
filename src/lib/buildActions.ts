@@ -5,9 +5,13 @@ import { writeFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import { DynamicActionsFunction } from "node-plop";
 import { ActionType, CustomActionFunction } from "plop";
+import { exec } from "child_process";
 import { getFiles } from "./getFiles";
 import { getCurrentValueOrHash } from "./getCurrentValueOrHash";
 import packageJson from "../../package.json";
+import { promisify } from "util";
+
+const execPromise = promisify(exec);
 
 export interface GeneratorData {
   name: string;
@@ -29,6 +33,21 @@ const generateHashes: CustomActionFunction = async (answers) => {
     })
   );
   return "File hashes created";
+};
+
+const installDependencies: CustomActionFunction = async (answers) => {
+  await execPromise("yarn install", { cwd: answers.destination });
+  return "dependencies installed";
+};
+
+const formatFiles: CustomActionFunction = async (answers) => {
+  await execPromise("yarn format", { cwd: answers.destination });
+  return "files formatted";
+};
+
+const build: CustomActionFunction = async (answers) => {
+  await execPromise("yarn build", { cwd: answers.destination });
+  return "project built";
 };
 
 const generateConfigJson =
@@ -66,6 +85,9 @@ export const buildActions =
     const actions = buildCustomActions(data);
     return [
       ...actions,
+      installDependencies,
+      build,
+      formatFiles,
       generateHashes,
       generateConfigJson(generatorName, originalDestination),
     ];

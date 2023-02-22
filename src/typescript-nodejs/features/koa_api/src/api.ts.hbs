@@ -1,6 +1,4 @@
-{{#includes features "secrets_management"}}
 import 'dotenv/config';
-{{/includes}}
 import Koa from "koa";
 import { router } from "koa-object-router";
 {{#includes api_middleware "cors"}}
@@ -9,9 +7,15 @@ import cors from "@koa/cors";
 {{#includes api_middleware "json_bodyparser"}}
 import bodyParser from "koa-bodyparser";
 {{/includes}}
-import routers from './lib/routers';
+{{#includes features "log_management"}}
+import { logger, loggerMiddleware } from "./lib/logger";
+{{/includes}}
+import routers from "./lib/routers";
 
 const app = new Koa();
+{{#includes features "log_management"}}
+app.use(loggerMiddleware);
+{{/includes}}
 {{#includes api_middleware "cors"}}
 app.use(cors());
 {{/includes}}
@@ -22,7 +26,9 @@ app.use(
   router({
     routers,
     excludeRegexString: ".*\\.test\\.js",
-    errorHandler: console.error
+    errorHandler: {{#includes features "log_management"}}(error) => logger.error(error){{/includes}}{{#excludes features "log_management"}}console.error{{/excludes}},
   })
 );
-app.listen(parseInt(process.env.PORT), () => console.log(`Server running at http://localhost:${process.env.PORT}`));
+app.listen(parseInt(process.env.PORT || "4444"), () =>
+  console.log(`Server running at http://localhost:${process.env.PORT}`)
+);
