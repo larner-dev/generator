@@ -9,7 +9,7 @@
     "build:cjs": "./esbuild.js cjs",
     "build:esm": "./esbuild.js esm",
     "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outdir build/types",
-    "dev": "yarn build && concurrently 'yarn build:types --watch' 'yarn build:esm --watch'{{#includes features "koa_api"}} 'nodemon build/esm/api.js -w ./build/esm'{{/includes}}",
+    "dev": "yarn build && concurrently 'yarn build:types --watch' 'yarn build:esm --watch'{{#includes features "koa_api"}} 'nodemon build/esm/api.js -w ./build/esm -w .env'{{/includes}}",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     {{#includes features "publishable"}}

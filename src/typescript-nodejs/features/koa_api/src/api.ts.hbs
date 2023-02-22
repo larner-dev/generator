@@ -25,4 +25,4 @@ app.use(
     errorHandler: console.error
   })
 );
-app.listen(3000, () => console.log("Server running at http://localhost:3000"));
+app.listen(parseInt(process.env.PORT), () => console.log(`Server running at http://localhost:${process.env.PORT}`));

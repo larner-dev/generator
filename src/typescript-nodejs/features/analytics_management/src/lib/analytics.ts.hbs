@@ -1,0 +1,38 @@
+import { Jsonifiable } from "type-fest";
+{{#includes features "analytics_management_posthog"}}
+import { PostHog } from 'posthog-node';
+{{/includes}}
+import { name } from "../../package.json";
+import { secrets } from "./secrets";
+
+interface TrackParams {
+  event: string;
+  distinctId: string;
+  properties?: Record<string, Jsonifiable>;
+}
+
+{{#includes features "analytics_management_posthog"}}
+const { POSTHOG_TOKEN } = await secrets();
+
+const client = new PostHog(POSTHOG_TOKEN);
+
+export const analytics = {
+  track(params: TrackParams) {
+    params.properties = params.properties || {};
+    params.properties.source = name;
+    client.capture(params);
+  },
+  identify(distinctId: string, properties: Record<string, Jsonifiable>) {
+    client.identify({
+      distinctId,
+      properties,
+    });
+  },
+  alias(distinctId: string, alias: string) {
+    client.alias({
+      distinctId,
+      alias,
+    });
+  },
+};
+{{/includes}}

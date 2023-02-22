@@ -11,8 +11,8 @@ interface Dependency {
   version: string;
   source?: string;
 }
-
-const featureDependencies: Record<string, Dependency[]> = {
+//
+const packageDependencies: Record<string, Dependency[]> = {
   default: [],
   koa_api: [
     { name: "koa", version: "2.14.1" },
@@ -34,8 +34,10 @@ const featureDependencies: Record<string, Dependency[]> = {
   log_management: [{ name: "pino", version: "8.10.0" }],
   log_management_logtail: [{ name: "@logtail/pino", version: "0.2.0" }],
   log_management_syslog: [{ name: "pino-syslog", version: "3.0.0" }],
+  analytics_management: [{ name: "type-fest", version: "3.5.7" }],
+  analytics_management_posthog: [{ name: "posthog-node", version: "2.5.3" }],
 };
-const featureDevDependencies: Record<string, Dependency[]> = {
+const packageDevDependencies: Record<string, Dependency[]> = {
   default: [
     { name: "@types/node", version: "18.11.18" },
     { name: "@typescript-eslint/eslint-plugin", version: "5.48.1" },
@@ -103,6 +105,10 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
           name: "Secrets Management",
           value: "secrets_management",
         },
+        {
+          name: "Analytics Management",
+          value: "analytics_management",
+        },
       ],
     },
     {
@@ -139,6 +145,34 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
     },
     {
       type: "list",
+      name: "log_management_type",
+      message: "How would you like to manage logs?",
+      choices: [
+        {
+          name: "Logtail",
+          value: "logtail",
+        },
+        {
+          name: "Syslog",
+          value: "syslog",
+        },
+      ],
+      when: (answers) => answers.features.includes("log_management"),
+    },
+    {
+      type: "list",
+      name: "analytics_management_type",
+      message: "How would you like to manage anlytics?",
+      choices: [
+        {
+          name: "Posthog",
+          value: "posthog",
+        },
+      ],
+      when: (answers) => answers.features.includes("analytics_management"),
+    },
+    {
+      type: "list",
       name: "secrets_management_type",
       message: "How would you like to manage secrets?",
       choices: [
@@ -153,7 +187,8 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       ],
       when: (answers) =>
         answers.features.includes("secrets_management") ||
-        answers.log_management_type !== "syslog",
+        answers.log_management_type !== "syslog" ||
+        answers.features.includes("analytics_management"),
     },
     {
       type: "confirm",
@@ -175,6 +210,12 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         `secrets_management_${data.secrets_management_type}`
       );
     }
+    if ("analytics_management_type" in data) {
+      data.features.push(
+        "analytics_management",
+        `analytics_management_${data.analytics_management_type}`
+      );
+    }
     if ("log_management_type" in data) {
       data.features.push(
         "log_management",
@@ -182,15 +223,15 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       );
     }
     const dependencies = new Map<string, Dependency>(
-      featureDependencies.default.map((d) => [
+      packageDependencies.default.map((d) => [
         d.name,
         { ...d, source: "default" },
       ])
     );
     const devDependencies = new Map<string, Dependency>();
     for (const feature of data.features) {
-      if (feature in featureDependencies) {
-        for (const f of featureDependencies[feature]) {
+      if (feature in packageDependencies) {
+        for (const f of packageDependencies[feature]) {
           const existing = dependencies.get(f.name);
           if (existing && existing.version !== f.version) {
             console.log(
@@ -210,8 +251,8 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       }
     }
     for (const feature of ["default", ...data.features]) {
-      if (feature in featureDevDependencies) {
-        for (const f of featureDevDependencies[feature]) {
+      if (feature in packageDevDependencies) {
+        for (const f of packageDevDependencies[feature]) {
           let existing = dependencies.get(f.name);
           if (existing) {
             if (existing.version !== f.version) {

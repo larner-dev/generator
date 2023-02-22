@@ -3,7 +3,6 @@ declare global {
     interface ProcessEnv {
       NODE_ENV: "development" | "production";
       PORT: string;
-      {{#includes features "secrets_management_environment_variables"}}
       {{#includes features "log_management"}}
       LOG_LEVEL:
         | "trace"
@@ -13,10 +12,6 @@ declare global {
         | "error"
         | "fatal"
         | "silent";
-      {{/includes}}
-      {{#includes features "log_management_logtail"}}
-      LOGTAIL_TOKEN: string;
-      {{/includes}}
       {{/includes}}
     }
   }
