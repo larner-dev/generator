@@ -1,3 +1,4 @@
+{{#includesAny features "log_management" "koa_api"}}
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -18,5 +19,5 @@ declare global {
 }
 
 export {};
-
+{{/includesAny}}
 

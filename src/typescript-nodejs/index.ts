@@ -15,7 +15,7 @@ const packageDependencies: Record<string, Dependency[]> = {
   default: [],
   koa_api: [
     { name: "koa", version: "2.14.1" },
-    { name: "koa-object-router", version: "1.2.1" },
+    { name: "koa-object-router", version: "1.2.4" },
     { name: "dotenv", version: "16.0.3" },
   ],
   koa_api_json_bodyparser: [{ name: "koa-bodyparser", version: "4.3.0" }],

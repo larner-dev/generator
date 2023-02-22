@@ -25,6 +25,16 @@ export const newCommand = async (
       return options.fn(this);
     }
   });
+  plop.setHelper("includesAny", function (...args) {
+    let array = args[0];
+    const options = args[args.length - 1];
+    const values = args.slice(1, args.length - 1);
+    array = array instanceof Array ? array : [array];
+    if (array.some((v: unknown) => values.includes(v))) {
+      // @ts-ignore
+      return options.fn(this);
+    }
+  });
   plop.setHelper("excludes", function (array, value, options) {
     array = array instanceof Array ? array : [array];
     if (!array.includes(value)) {
