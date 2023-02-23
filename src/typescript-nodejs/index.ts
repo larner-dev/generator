@@ -39,6 +39,18 @@ const packageDependencies: Record<string, Dependency[]> = {
   log_management_syslog: [{ name: "pino-syslog", version: "3.0.0" }],
   analytics_management: [{ name: "type-fest", version: "3.5.7" }],
   analytics_management_posthog: [{ name: "posthog-node", version: "2.5.3" }],
+  db_knex: [{ name: "knex", version: "2.4.2" }],
+  db_knex_orm: [{ name: "tiny-knex-orm", version: "1.0.0" }],
+  db_knex_dialect_pg: [{ name: "pg", version: "8.9.0" }],
+  db_knex_dialect_pg_native: [{ name: "pg-native", version: "3.0.1" }],
+  db_knex_dialect_sqlite3: [{ name: "sqlite3", version: "5.1.4" }],
+  db_knex_dialect_better_sqlite3: [
+    { name: "better-sqlite3", version: "8.1.0" },
+  ],
+  db_knex_dialect_mysql: [{ name: "mysql", version: "2.18.1" }],
+  db_knex_dialect_mysql2: [{ name: "mysql2", version: "3.1.2" }],
+  db_knex_dialect_oracledb: [{ name: "oracledb", version: "5.5.0" }],
+  db_knex_dialect_tedious: [{ name: "tedious", version: "15.1.3" }],
 };
 const packageDevDependencies: Record<string, Dependency[]> = {
   default: [
@@ -99,6 +111,14 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
           value: "koa_api",
         },
         {
+          name: "Knex database connection",
+          value: "db_knex",
+        },
+        {
+          name: "Tiny knex ORM",
+          value: "db_knex_orm",
+        },
+        {
           name: "Command Line Tool",
           value: "command_line_tool",
         },
@@ -131,6 +151,24 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         },
       ],
       when: (answers) => answers.features.includes("koa_api"),
+    },
+    {
+      type: "list",
+      name: "db_knex_dialect",
+      message: "Which knex database will you use?",
+      choices: [
+        { name: "pg", value: "pg" },
+        { name: "pg-native", value: "pg-native" },
+        { name: "sqlite3", value: "sqlite3" },
+        { name: "better-sqlite3", value: "better-sqlite3" },
+        { name: "mysql", value: "mysql" },
+        { name: "mysql2", value: "mysql2" },
+        { name: "oracledb", value: "oracledb" },
+        { name: "tedious", value: "tedious" },
+      ],
+      when: (answers) =>
+        answers.features.includes("db_knex") ||
+        answers.features.includes("db_knex_orm"),
     },
     {
       type: "list",
@@ -177,7 +215,9 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       when: (answers) =>
         answers.features.includes("secrets_management") ||
         answers.log_management_type === "logtail" ||
-        answers.features.includes("analytics_management"),
+        answers.features.includes("analytics_management") ||
+        answers.features.includes("db_knex") ||
+        answers.features.includes("db_knex_orm"),
     },
     {
       type: "confirm",
@@ -192,6 +232,16 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
       for (const middleware of data.api_middleware) {
         data.features.push(`koa_api_${middleware}`);
       }
+    }
+    if ("db_knex_orm" in data) {
+      data.features.push("db_knex");
+    }
+    if ("db_knex_dialect" in data) {
+      console.log(data.db_knex_dialect);
+      data.features.push(
+        "db_knex",
+        `db_knex_dialect_${data.db_knex_dialect.replace("-", "_")}`
+      );
     }
     if ("secrets_management_type" in data) {
       data.features.push(
@@ -304,7 +354,7 @@ export const typescriptNodejs: ExtendedPlopGeneratorConfig = {
         type: "addMany",
         destination: data.destination,
         templateFiles: "**/*",
-        base: `typescript-nodejs/features/${feature}`,
+        base: `typescript-nodejs/features/${feature}/`,
         globOptions: { dot: true },
         stripExtensions: ["hbs"],
         force: true,

@@ -17,7 +17,8 @@
     "prepublishOnly": "yarn test && yarn build",
     {{/includes}}
     "test": "vitest --run --dir ./src",
-    "test-watch": "vitest --dir ./src"
+    "test:watch": "vitest --dir ./src",
+    "test:coverage": "vitest run --dir ./src --coverage"
   },
   "exports": {
     ".": {
