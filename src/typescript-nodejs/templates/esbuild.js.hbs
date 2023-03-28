@@ -48,6 +48,7 @@ const options = {
     esbuildPluginMakeRouterObject({
       outfile: resolve(__dirname, "src/lib/routers.ts"),
       routesDirectory: resolve(__dirname, "src/routes"),
+      excludeRegex: ".*\\.test.ts",
     }),
   ],
   {{/includes}}
